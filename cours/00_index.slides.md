@@ -9,4 +9,6 @@ contributors:
 
 # Index
 
-- [Exemple](./cours/exemple.html)
+- [Introduction](01_introduction.slides.html)
+
+> ⚠️ Les slides sont en cours de rédaction, merci de votre compréhension ! ⚠️

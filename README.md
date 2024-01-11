@@ -1,17 +1,29 @@
-# Nom du cours
+# Spring Boot
 
 > Plus j'apprends, plus je réalise que je ne sais pas.  
 > *Albert Einstein*
 
 ## Description et objectifs 🎯
 
-<!--- Décrire le cours en quelques lignes -->
+Ce cours a pour but de vous apprendre à créer des API REST avec Spring Boot.
+Il abordera les notions de base de Spring Boot, ainsi que les bonnes pratiques pour créer une API REST.
 
 ## Plan de cours 🗺️
 
-<!--- 
-- [ ] Chapitre
--->
+- [ ] Introduction
+    - Rappels et définitions (IoC, IoD, etc.)
+    - Les types d'architecture (monolithique, n-tiers, microservices, etc.)
+    - Les API REST
+    - Présentation de Spring
+- [ ] Spring Boot
+    - Présentation
+    - Les starters
+    - Les annotations
+    - Les tests
+    - Les bonnes pratiques
+    - Les outils
+
+
 
 ## Suivre ce cours 📚
 
@@ -48,6 +60,7 @@ N'hésitez pas à partager le cours autour de vous !
 
 ## Ressources 👜
 
-<!-- 
-- Citez les sources utilisées pour la création du cours
--->
+- [Documentation Spring](https://spring.io/)
+- [Spring Initializr](https://start.spring.io/)
+- [Spring Boot  par Gayerie](https://gayerie.dev/docs/spring/spring/introduction.html)
+- [Cours OpenClassroom](https://openclassrooms.com/fr/courses/6900101-creez-une-application-java-avec-spring-boot)
