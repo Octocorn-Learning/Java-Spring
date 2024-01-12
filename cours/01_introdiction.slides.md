@@ -470,3 +470,8 @@ POST : `/api/users`
 }
 ```
 
+---
+
+# La suite !
+
+[Retour à l'index](/index.html)
