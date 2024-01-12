@@ -10,18 +10,21 @@ Il abordera les notions de base de Spring Boot, ainsi que les bonnes pratiques p
 
 ## Plan de cours 🗺️
 
-- [ ] Introduction
+- [x] Introduction
     - Rappels et définitions (IoC, IoD, etc.)
     - Les types d'architecture (monolithique, n-tiers, microservices, etc.)
     - Les API REST
-    - Présentation de Spring
-- [ ] Spring Boot
-    - Présentation
-    - Les starters
-    - Les annotations
-    - Les tests
-    - Les bonnes pratiques
-    - Les outils
+- [x] Spring
+  - Présentation de Spring
+  - Présentation de Spring Boot
+  - Création de beans
+  - Injection de dépendances
+  - Lombok
+- [ ] Création d'API avec Spring Boot
+  - Initialiser le projet,
+  - Couche controller,
+  - Couche service,
+  - Couche repository avec JPA,
 
 
 

@@ -3,7 +3,7 @@ title: Spring
 theme: solarized
 author: Alexandre Devos
 company: Octocorn
-contributors: 
+contributors:
   - Alexandre Devos
 sources:
   - https://docs.spring.io/spring-framework/reference/overview.html
@@ -25,9 +25,9 @@ sources:
 
 - Parler de "Spring" peut signifier plusieurs choses :
 
-  - Spring Framework : la base de Spring
+    - Spring Framework : la base de Spring
 
-  - Spring Boot : un ensemble d'outils/projets pour Spring
+    - Spring Boot : un ensemble d'outils/projets pour Spring
 
 > Dans un premier temps, nous parlerons de Spring Framework
 
@@ -249,7 +249,7 @@ De nombreux projets ont été créés autour de Spring :
 
 ### Spring Initializr
 
-En ligne : 
+En ligne :
 
 - Rendez-vous sur [https://start.spring.io/](https://start.spring.io/)
 
@@ -329,9 +329,11 @@ Gestion des Beans avec Spring
 public interface Moteur {
 
     public String getMarque();
+
     public Double getConsommation();
 
     public void setMarque(String marque);
+
     public void setConsommation(Double consommation);
 }
 ```
@@ -344,37 +346,37 @@ public interface Moteur {
 
 ```java
 public class MoteurThermique implements Moteur {
-  private String marque;
-  private Double consommation;
+    private String marque;
+    private Double consommation;
 
-  public MoteurThermique(String marque, Double consommation) {
-    this.marque = marque;
-    this.consomation = consommation;
-  }
+    public MoteurThermique(String marque, Double consommation) {
+        this.marque = marque;
+        this.consomation = consommation;
+    }
 
-  public MoteurThermique() {
-  }
+    public MoteurThermique() {
+    }
 
-  public String getMarque() {
-    return marque;
-  }
+    public String getMarque() {
+        return marque;
+    }
 
 
-  public Double getConsommation() {
-    return consomation;
-  }
+    public Double getConsommation() {
+        return consomation;
+    }
 
-  public void setMarque(String marque) {
-    this.marque = marque;
-  }
+    public void setMarque(String marque) {
+        this.marque = marque;
+    }
 
-  public void setConsommation(Double consomation) {
-    this.consomation = consomation;
-  }
+    public void setConsommation(Double consomation) {
+        this.consomation = consomation;
+    }
 
-  public String toString() {
-    return "MoteurThermique de marque " + marque + " consommant " + consomation + "L/100km";
-  }
+    public String toString() {
+        return "MoteurThermique de marque " + marque + " consommant " + consomation + "L/100km";
+    }
 }
 ```
 
@@ -392,7 +394,7 @@ public class Voiture {
     public Voiture(Moteur moteur) {
         this.moteur = moteur;
     }
-    
+
     public Voiture() {
     }
 
@@ -417,7 +419,8 @@ public class Voiture {
 
 ### `Main.java`
 
-Actuellement, si nous voulons créer une instance de `Voiture`, nous devons créer une instance de `Moteur` et l'injecter dans la voiture.
+Actuellement, si nous voulons créer une instance de `Voiture`, nous devons créer une instance de `Moteur` et l'injecter
+dans la voiture.
 
 ```java
 public class Main {
@@ -458,6 +461,7 @@ public class Main {
 ### `MoteurThermique.java`
 
 ```java [1-2]
+
 @Component
 public class MoteurThermique implements Moteur {
     private String marque;
@@ -479,7 +483,7 @@ public class MoteurThermique implements Moteur {
     public Double getConsommation() {
         return consomation;
     }
-    
+
     public void setMarque(String marque) {
         this.marque = marque;
     }
@@ -502,6 +506,7 @@ public class MoteurThermique implements Moteur {
 ### `Voiture.java`
 
 ```java [1-2]
+
 @Component
 public class Voiture {
 
@@ -510,7 +515,7 @@ public class Voiture {
     public Voiture(Moteur moteur) {
         this.moteur = moteur;
     }
-    
+
     public Voiture() {
     }
 
@@ -587,7 +592,7 @@ Output : `Voiture avec un moteur MoteurThermique de marque null consommant nullL
 
 - Enfin, appel du setter `setMoteur` pour injecter le moteur
 
-- Facile ici, car nous n'avons qu'un seul type de moteur. 
+- Facile ici, car nous n'avons qu'un seul type de moteur.
 
 - Mais que se passe-t-il si nous avons plusieurs types de moteurs ?
 
@@ -598,16 +603,17 @@ Output : `Voiture avec un moteur MoteurThermique de marque null consommant nullL
 ### `MoteurElectrique.java`
 
 ```java
+
 @Component
 public class MoteurElectrique implements Moteur {
     private String marque;
     private Double consommation;
-    
+
     public MoteurElectrique(String marque, Double consommation) {
         this.marque = marque;
         this.consomation = consommation;
     }
-    
+
     public MoteurElectrique() {
     }
 
@@ -662,6 +668,7 @@ public class MoteurElectrique implements Moteur {
 ### `MoteurThermique.java`
 
 ```java [1]
+
 @Component
 @Primary
 public class MoteurThermique implements Moteur {
@@ -723,6 +730,7 @@ public class MoteurThermique implements Moteur {
 Peut être placée sur les setters pour définir une valeur par défaut
 
 ```java [24, 29]
+
 @Component
 @Primary
 public class MoteurThermique implements Moteur {
@@ -830,18 +838,19 @@ public class MoteurThermique implements Moteur {
 ### `@Getter`
 
 ```java [3-6]
+
 @Component
 public class MoteurElectrique implements Moteur {
     @Getter
     private String marque;
     @Getter
     private Double consommation;
-    
+
     public MoteurElectrique(String marque, Double consommation) {
         this.marque = marque;
         this.consomation = consommation;
     }
-    
+
     public MoteurElectrique() {
     }
 
@@ -875,6 +884,7 @@ public class MoteurElectrique implements Moteur {
 ### `@Setter`
 
 ```java [3-8]
+
 @Component
 public class MoteurElectrique implements Moteur {
     @Getter
@@ -883,12 +893,12 @@ public class MoteurElectrique implements Moteur {
     @Getter
     @Setter
     private Double consommation;
-    
+
     public MoteurElectrique(String marque, Double consommation) {
         this.marque = marque;
         this.consomation = consommation;
     }
-    
+
     public MoteurElectrique() {
     }
 }
@@ -911,6 +921,7 @@ public class MoteurElectrique implements Moteur {
 ### `@NoArgsConstructor`
 
 ```java [1-2]
+
 @Component
 @NoArgsConstructor
 public class MoteurElectrique implements Moteur {
@@ -920,7 +931,7 @@ public class MoteurElectrique implements Moteur {
     @Getter
     @Setter
     private Double consommation;
-    
+
     public MoteurElectrique(String marque, Double consommation) {
         this.marque = marque;
         this.consomation = consommation;
@@ -945,6 +956,7 @@ public class MoteurElectrique implements Moteur {
 ### `@AllArgsConstructor`
 
 ```java [1-2]
+
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
@@ -955,6 +967,41 @@ public class MoteurElectrique implements Moteur {
     @Getter
     @Setter
     private Double consommation;
+}
+```
+
+----
+
+## Lombok
+
+### `@Getter``@Setter`
+
+- Plutôt que de placer `@Getter` et `@Setter` sur chaque champ, on peut les placer sur la classe
+
+- Ils seront alors appliqués à tous les champs de la classe
+
+> Ce faisant, **tous** les champs de la classe seront générés !
+
+----
+
+## Lombok
+
+### `@Getter``@Setter`
+
+```java [1-2]
+@Setter
+@Getter
+@Component
+@AllArgsConstructor
+@NoArgsConstructor
+public class MoteurElectrique implements Moteur {
+    private String marque;
+    private Double consommation;
+
+    @Override
+    public String toString() {
+        return "MoteurElectrique de marque " + marque + " consommant " + consommation + "L/100km";
+    }
 }
 ```
 
@@ -975,15 +1022,14 @@ public class MoteurElectrique implements Moteur {
 ### `@Value`
 
 ```java [0]
+
 @Component
+@Getter
+@Setter
 public class MoteurElectrique implements Moteur {
-    @Getter
-    @Setter
     @Value("Default Electrique")
     private String marque;
 
-    @Getter
-    @Setter
     @Value("10.0")
     private Double consommation;
 

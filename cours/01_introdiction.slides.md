@@ -39,8 +39,6 @@ sources:
 
 - Le conteneur est responsable de la création et de la destruction des objets.
 
-- La gestion des composants (plugins) est déléguée à un framework ou un runtime
-
 > .NET, Spring, etc.
 
 ----
@@ -50,8 +48,6 @@ sources:
 - L'interface `ApplicationContext` est le conteneur IoC de Spring
 
 - C'est lui qui gère le cycle de vie des objets
-
-- Autrement dit, on lui délègue la gestion des plugins nécessaires à notre application
 
 > L'IoC est là pour nous simplifier la vie !
 
