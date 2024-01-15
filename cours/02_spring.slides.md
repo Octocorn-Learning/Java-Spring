@@ -293,7 +293,7 @@ Sur IntelliJ (ultimate) :
 
 Créez un projet Maven avec les dépendances suivantes :
 
-- Lombock
+- Lombok
 
 > Laissez vous guider par votre IDE. En cas de problème, pensez à vider le cache !
 
@@ -667,8 +667,7 @@ public class MoteurElectrique implements Moteur {
 
 ### `MoteurThermique.java`
 
-```java [1]
-
+```java [2]
 @Component
 @Primary
 public class MoteurThermique implements Moteur {
@@ -816,6 +815,23 @@ public class MoteurThermique implements Moteur {
 - Nous l'avons ajouté au projet via **Spring Initializr**
 
 - Il peut aussi être ajouté à postériori, dans le fichier `pom.xml`
+
+----
+
+## Lombok
+
+### Annotations
+
+- `@Getter` et `@Setter` : Génère les getters et setters
+- `@NoArgsConstructor` et `@AllArgsConstructor` : Génère un constructeur
+
+----
+
+## Lombok
+
+### Démonstration !
+
+Ajoutons Lombok à notre projet
 
 ----
 
