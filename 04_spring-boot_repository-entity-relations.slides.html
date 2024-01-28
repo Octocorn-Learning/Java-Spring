@@ -2092,11 +2092,20 @@ public class Acteur {
 
 ### ManyToMany
 
-- Réponse : en utilisant des DTO !
+Réponse : en utilisant des DTO !
 
-- Mais avant, à vous d'implémenter le CRUD pour les acteurs et les réalisateurs :
-    - `POST /acteurs`, `GET /acteurs`, `GET /acteurs/{id}`, `PUT /acteurs/{id}`, `DELETE /acteurs/{id}`
-    - `POST /realisateurs`, `GET /realisateurs`, `GET /realisateurs/{id}`, `PUT /realisateurs/{id}`, `DELETE /realisateurs/{id}`
+
+----
+
+## Les relations
+
+### A vous de jouer !
+
+Mais avant, à vous d'implémenter le CRUD pour les acteurs et les réalisateurs :
+
+- `POST /acteurs`, `GET /acteurs`, `GET /acteurs/{id}`, `PUT /acteurs/{id}`, `DELETE /acteurs/{id}`
+
+- `POST /realisateurs`, `GET /realisateurs`, `GET /realisateurs/{id}`, `PUT /realisateurs/{id}`, `DELETE /realisateurs/{id}`
 
 ---
 
@@ -2630,6 +2639,77 @@ Réalisez le TP 3
 
 ----
 
+## Status HTTP
+
+### Create
+
+- Si on réalise un POST sur `/film`, nous obtenons un code 200
+
+- Or, nous devrions avoir un code 201
+
+- Il existe une annotation à placer sur la méthode pour définir le code HTTP : `@ResponseStatus`
+
+----
+
+## Status HTTP
+
+### Create
+
+```java [24-25]
+
+@RestController
+@RequestMapping("/films")
+public class FilmController {
+    private final FilmService filmService;
+
+    private final ObjectMapper objectMapper;
+
+    public FilmController(FilmService filmService, ObjectMapper objectMapper) {
+        this.filmService = filmService;
+        this.objectMapper = objectMapper;
+    }
+
+    @GetMapping
+    public List<FilmReduitDto> findAll() {
+        return filmService
+                .findAll()
+                .stream().map(
+                        film -> objectMapper.convertValue(film, FilmReduitDto.class)
+                ).toList();
+    }
+
+    @PostMapping
+    // On définit le code HTTP à retourner
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film save(@RequestBody Film film) {
+        return filmService.save(film);
+    }
+
+    @GetMapping("/{id}")
+    public FilmCompletDto findById(@PathVariable int id) {
+        Film film = filmService.findById(id);
+        return objectMapper.convertValue(film, FilmCompletDto.class);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable int id) {
+        filmService.deleteById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Film update(@RequestBody Film film, @PathVariable int id) {
+        return filmService.update(film, id);
+    }
+
+    @GetMapping("/search")
+    public Film findByTitre(@RequestParam String titre) {
+        return filmService.findByTitre(titre);
+    }
+}
+```
+
+----
+
 ## Les Exceptions
 
 ### Exemple
@@ -2663,9 +2743,7 @@ class FilmService {
 
 - Heureusement, Spring nous offre la possibilité de créer des exceptions HTTP
 
-- Nous avons un décorateur `@ResponseStatus` qui permet de définir le code HTTP
-
-- On peut le placer sur une classe exception ou sur une méthode
+- Nous pouvons utiliser `@ResponseStatus` sur une classe exception
 
 ----
 
