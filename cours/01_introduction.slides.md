@@ -468,6 +468,6 @@ POST : `/api/users`
 
 ---
 
-# La suite !
+## La suite !
 
-[Retour à l'index](/index.html)
+[index](index.html)

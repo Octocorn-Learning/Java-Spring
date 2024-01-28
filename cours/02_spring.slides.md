@@ -728,7 +728,7 @@ public class MoteurThermique implements Moteur {
 
 Peut être placée sur les setters pour définir une valeur par défaut
 
-```java [24, 29]
+```java [25, 30]
 
 @Component
 @Primary
@@ -1082,3 +1082,9 @@ Il existe d'autres annotations, comme :
 - Notez que, si vous devez ajouter de la logique dans vos getters/setters, il faudra les rédiger à la main !
 
 - Lombok est là pour amoindrir les tâches répétitives, pas pour remplacer le code !
+
+---
+
+## La suite !
+
+[index](index.html)
