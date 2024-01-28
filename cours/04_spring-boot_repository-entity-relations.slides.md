@@ -2579,8 +2579,462 @@ En revanche, nous ne pourrons plus faire ça :
 
 ----
 
-## A vous de jouer !
+## À vous de jouer !
 
 Réalisez le TP 3
 
+---
+
+# Spring Boot
+
+## HTTP Status et Exceptions
+
+![Spring](./assets/spring.png) <!-- .element: width="20%" align="left"-->
+
+![Spring Boot](./assets/spring-boot.png) <!-- .element: width="40%" align="right"-->
+
 ----
+
+## Les Exceptions
+
+### Définition
+
+- Les exceptions sont primordiales dans une application
+
+- C'est grâce à elles que nous pouvons gérer les erreurs
+
+- En revanche, si on se contente de throw des exceptions, nous n'aurons pas le bon message HTTP.
+
+----
+
+## Les Exceptions
+
+### Exemple
+
+Avec ce code, nous aurons une erreur 500 !
+
+```java
+@Service
+class FilmService {
+    private final FilmRepository filmRepository;
+
+    public FilmService(FilmRepository filmRepository) {
+        this.filmRepository = filmRepository;
+    }
+
+    public Film createFilm(Film film) {
+        if (film.getTitre() == null) {
+            throw new RuntimeException("Le titre ne peut pas être null");
+        }
+
+        return filmRepository.save(film);
+    }
+}
+```
+
+----
+
+## Les Exceptions
+
+### Expceptions Spring Boot
+
+- Heureusement, Spring nous offre la possibilité de créer des exceptions HTTP
+
+- Nous avons un décorateur `@ResponseStatus` qui permet de définir le code HTTP
+
+- On peut le placer sur une classe exception ou sur une méthode
+
+----
+
+## Les Exceptions
+
+### Améliorons les films
+
+- Nous allons créer une exception `FilmNotFoundException`
+
+- Elle sera lancée si un film n'est pas trouvé
+
+----
+
+## Les Exceptions
+
+### `FilmNotFoundException`
+
+```java [0]
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class FilmNotFoundException extends RuntimeException {
+    public FilmNotFoundException(String message) {
+        super(message);
+    }
+}
+```
+
+----
+
+## Les Exceptions
+
+### `FilmService`
+
+```java [24]
+
+@Service
+public class FilmService {
+    private final FilmRepository filmRepository;
+
+    private final ActeurService acteurService;
+    public FilmService(FilmRepository filmRepository, ActeurService acteurService) {
+        this.filmRepository = filmRepository;
+        this.acteurService = acteurService;
+    }
+
+    public List<Film> findAll() {
+        return filmRepository.findAll();
+    }
+
+    public Film save(Film film) {
+        return filmRepository.save(film);
+    }
+
+
+    public Film findById(Integer id) {
+        return filmRepository.findById(id)
+                .orElseThrow(
+                        () -> new FilmNotFoundException("Film non trouvé")
+                );
+    }
+
+    public void deleteById(Integer id) {
+        this.findById(id);
+
+        filmRepository.deleteById(id);
+    }
+
+    public Film update(Film film, Integer id) {
+
+        this.findById(id);
+        
+        film.setId(id);
+
+        return filmRepository.save(film);
+    }
+
+    public Film findByTitre(String titre) {
+        return filmRepository.findByTitre(titre).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film non trouvé")
+        );
+    }
+
+    public List<Acteur> findActeursByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getActeurs();
+    }
+
+    public Realisateur findRealisateurByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getRealisateur();
+    }
+
+    public List<Film> findByRealisateurId(Integer id) {
+        return filmRepository.findByRealisateurId(id);
+    }
+
+    public Film addActeur(Integer id, Acteur acteur) {
+        // On recherche notre film par son id
+        Film film = this.findById(id);
+
+        // On vérifie que l'acteur existe
+        acteurService.findById(acteur.getId());
+
+        // On ajoute l'acteur à la liste des acteurs du film
+         film.getActeurs().add(acteur);
+
+        return filmRepository.save(film);
+    }
+
+}
+```
+
+----
+
+## Les Exceptions
+
+### Bad request
+
+- Erreur généralement retournée si les données d'un POST ou PUT ne sont pas correctes
+
+- Actuellement, nous n'avons aucune vérification en place
+
+- Nous allons donc ajouter des vérifications
+
+----
+
+## Les Exceptions
+
+### `BadRequestException`
+
+```java [0]
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class BadRequestException extends RuntimeException {
+    public BadRequestException(String message) {
+        super(message);
+    }
+}
+```
+
+----
+
+## Les Exceptions
+
+### `FilmService`
+
+```java [16-30]
+
+@Service
+public class FilmService {
+    private final FilmRepository filmRepository;
+
+    private final ActeurService acteurService;
+    public FilmService(FilmRepository filmRepository, ActeurService acteurService) {
+        this.filmRepository = filmRepository;
+        this.acteurService = acteurService;
+    }
+
+    public List<Film> findAll() {
+        return filmRepository.findAll();
+    }
+
+    public Film save(Film film) {
+        if (film.getTitre() == null) {
+            throw new BadRequestException("Le titre est obligatoire");
+        }
+
+        if (film.getDateSortie() == null) {
+            throw new BadRequestException("La date de sortie est obligatoire");
+        }
+
+        if (film.getRealisateur() == null) {
+            throw new BadRequestException("Le réalisateur est obligatoire");
+        }
+
+        return filmRepository.save(film);
+    }
+
+
+    public Film findById(Integer id) {
+        return filmRepository.findById(id)
+                .orElseThrow(
+                        () -> new FilmNotFoundException("Film non trouvé")
+                );
+    }
+
+    public void deleteById(Integer id) {
+        // Appel de la méthode findById pour vérifier que le film existe
+        this.findById(id);
+
+        filmRepository.deleteById(id);
+    }
+
+    public Film update(Film film, Integer id) {
+        // Appel de la méthode findById pour vérifier que le film existe
+        this.findById(id);
+
+        // On force l'id du film à mettre à jour
+        // Sinon, merge en créera un nouveau
+        film.setId(id);
+
+        return filmRepository.save(film);
+    }
+
+    public Film findByTitre(String titre) {
+        return filmRepository.findByTitre(titre).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film non trouvé")
+        );
+    }
+
+    public List<Acteur> findActeursByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getActeurs();
+    }
+
+    public Realisateur findRealisateurByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getRealisateur();
+    }
+
+    public List<Film> findByRealisateurId(Integer id) {
+        return filmRepository.findByRealisateurId(id);
+    }
+
+    public Film addActeur(Integer id, Acteur acteur) {
+        // On recherche notre film par son id
+        Film film = this.findById(id);
+
+        // On vérifie que l'acteur existe
+        acteurService.findById(acteur.getId());
+
+        // On ajoute l'acteur à la liste des acteurs du film
+         film.getActeurs().add(acteur);
+
+        return filmRepository.save(film);
+    }
+
+}
+```
+
+----
+
+## Les Exceptions
+
+### Messages groupés
+
+- Avec cette technique, c'est déjà mieux
+
+- Cependant, nous avons un message à la fois, ce qui peut être problématique si on a plusieurs problèmes
+
+- Nous pouvons alors utiliser une `List<String>` pour stocker les messages
+
+----
+
+## Les Exceptions
+
+### `FilmService`
+
+```java [16-30]
+
+@Service
+public class FilmService {
+    private final FilmRepository filmRepository;
+
+    private final ActeurService acteurService;
+    public FilmService(FilmRepository filmRepository, ActeurService acteurService) {
+        this.filmRepository = filmRepository;
+        this.acteurService = acteurService;
+    }
+
+    public List<Film> findAll() {
+        return filmRepository.findAll();
+    }
+
+    public Film save(Film film) {
+        List<String> erreurs = new ArrayList<>();
+
+        if (film.getTitre() == null || film.getTitre().isEmpty()) {
+            erreurs.add("Le titre est obligatoire");
+        }
+
+        if (film.getRealisateur() == null) {
+            erreurs.add("Le réalisateur est obligatoire");
+        }
+
+        if (!erreurs.isEmpty()) {
+            throw new BadRequestException(erreurs);
+        }
+
+        return filmRepository.save(film);
+    }
+
+
+    public Film findById(Integer id) {
+        return filmRepository.findById(id)
+                .orElseThrow(
+                        () -> new FilmNotFoundException("Film non trouvé")
+                );
+    }
+
+    public void deleteById(Integer id) {
+        // Appel de la méthode findById pour vérifier que le film existe
+        this.findById(id);
+
+        filmRepository.deleteById(id);
+    }
+
+    public Film update(Film film, Integer id) {
+        // Appel de la méthode findById pour vérifier que le film existe
+        this.findById(id);
+
+        // On force l'id du film à mettre à jour
+        // Sinon, merge en créera un nouveau
+        film.setId(id);
+
+        return filmRepository.save(film);
+    }
+
+    public Film findByTitre(String titre) {
+        return filmRepository.findByTitre(titre).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film non trouvé")
+        );
+    }
+
+    public List<Acteur> findActeursByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getActeurs();
+    }
+
+    public Realisateur findRealisateurByFilmId(Integer id) {
+        Film film = this.findById(id);
+        return film.getRealisateur();
+    }
+
+    public List<Film> findByRealisateurId(Integer id) {
+        return filmRepository.findByRealisateurId(id);
+    }
+
+    public Film addActeur(Integer id, Acteur acteur) {
+        // On recherche notre film par son id
+        Film film = this.findById(id);
+
+        // On vérifie que l'acteur existe
+        acteurService.findById(acteur.getId());
+
+        // On ajoute l'acteur à la liste des acteurs du film
+         film.getActeurs().add(acteur);
+
+        return filmRepository.save(film);
+    }
+
+}
+```
+
+----
+
+## Les Exceptions
+
+### `BadRequestException`
+
+```java [0]
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class BadRequestException extends RuntimeException {
+    public BadRequestException(List<String> erreurs) {
+        super(String.join(", ", erreurs));
+    }
+}
+```
+
+----
+
+## Les Exceptions
+
+### `FilmService`
+
+- La validation est en place ! 
+
+- Nous pouvons l'extraire dans une méthode dédiée pour ne pas alourdir le code !
+
+----
+
+## Les Exceptions
+
+### A vous de jouer !
+
+Réalisez le TP 4 !
+
+---
+
+# Spring Boot
+
+## La suite !
+
+[index](index.html)

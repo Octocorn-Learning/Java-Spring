@@ -11,6 +11,8 @@ Il vous faudra implémenter la logique de gestion sur le cinéma en lui-même.
 
 - Vous devrez donc reprendre le code de la démo et le modifier pour répondre aux exigences de ce TP.
 
+- Vous inclurez les exceptions et la validation des données.
+
 ### Rendu 📝
 
 - Votre projet Cinema sera à rendre sur un dépot GitHub.
@@ -265,7 +267,9 @@ La requête doit afficher la liste des séances à cette date
 
 - La route doit retourner uniquement les séances qui n'ont pas encore eu lieu
 
-- Les séances ne doivent pas être complètes
+- Les séances ne doivent pas être complètes (il doit rester des places)
+
+Exemple de retour :
 
 ```json
 [
@@ -298,6 +302,7 @@ La requête doit afficher la liste des séances à cette date
 ### Créer une route permettant de récupérer la liste des salles disponibles à une date donnée
 
 - GET `/salles/disponible?date=2021-10-01`
+
 - La route doit retourner la liste des salles qui n'ont pas de séance à cette date
 
 ```json
@@ -320,7 +325,7 @@ La requête doit afficher la liste des séances à cette date
 
 ### Bonus
 
-Pour les plus pressés, vous pouvez également ajouter :
+Pour les plus rapides, vous pouvez également ajouter :
 - La dockerisation du projet (avec docker-compose)
     - Monter le back + la BDD en mode production
     - Ajouter un jeu de données à la BDD lors du premier lancement
