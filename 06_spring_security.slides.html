@@ -1000,6 +1000,356 @@ public class SecurityConfig {
 }
 ```
 
+---
+
+## Spring Security
+
+### Basic Auth + BDD
+
+![Spring](./assets/spring.png) <!-- .element: width="20%" align="left"-->
+
+![Spring Boot](./assets/spring-boot.png) <!-- .element: width="40%" align="right"-->
+
+----
+
+## Spring Security
+
+### Gestion d'utilisateurs
+
+- Pour le moment, nous avons défini des utilisateurs en mémoire
+
+- En production, on utilisera une base de données qui permettra de gérer les utilisateurs et les rôles
+
+- Elle permet généralement l'inscription, la connexion, la gestion des mots de passe, etc.
+
+> Pour cette partie, nous allons nous concentrer sur la création et la connexion
+
+----
+
+## Spring Security
+
+### Création d'un utilisateur
+
+- Il nous faudra créer un entité `User` qui représente un utilisateur
+
+- Cette entité héritera de `UserDetails`, qui nous est apporté par Spring Security
+
+- Nous allons également créer une table de rôles
+
+----
+
+## Spring Security
+
+### `security.user.Role`
+
+```java
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class Role implements GrantedAuthority {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    private String authority;
+}
+```
+
+----
+
+## Spring Security
+
+### `security.user.Role`
+
+- GranatedAuthority est une interface de Spring Security
+
+- Elle représente un rôle
+
+- Cette implémentation est nécessaire pour que Spring Security puisse gérer les rôles correctement
+
+- Elle apporte notamment la méthode `getAuthority()`
+
+----
+
+## Spring Security
+
+### `security.user.User`
+
+```java
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "users")
+public class User implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    private String password;
+    private String username;
+    private boolean active;
+
+    // Nous utilisons une relation OneToOne pour lier un utilisateur à un rôle
+    // Ici, c'est par souci de simplicité, mais on pourrait/devrait utiliser une relation ManyToMany
+    @OneToOne(cascade = CascadeType.ALL)
+    private Role role;
+
+    // Toutes ces méthodes sont nécessaires pour UserDetails
+    
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(role);
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return this.active;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.active;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return this.active;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.active;
+    }
+}
+```
+
+----
+
+## Spring Security
+
+### `security.user.User`
+
+- `User` implémente `UserDetails`, qui est apporté par Spring Security
+
+- `UserDetails` est une interface qui représente un utilisateur
+
+- Elle contient toutes les informations nécessaires pour gérer un utilisateur
+
+----
+
+## Spring Security
+
+### `security.user.UserRepository`
+
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+```
+
+----
+
+## Spring Security
+
+### `security.user.UserRepository`
+
+- Un JpaRepository qui permet de gérer les utilisateurs
+
+- Nous ajoutons dès maintenant une méthode pour rechercher un utilisateur par son nom d'utilisateur
+
+- Nous en aurons besoin plus tard, pour la connexion
+
+----
+
+## Spring Security
+
+### `security.user.UserService`
+
+```java
+@Service
+@AllArgsConstructor
+// Nous implémentons l'interface UserDetailsService pour pouvoir utiliser notre propre service de gestion des utilisateurs
+public class UserService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    // Méthode pour créer un utilisateur
+    public User save(User user) {
+        
+        // Vérifier si l'utilisateur existe déjà
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already exists");
+        }
+        
+        // Permet de crypter le mot de passe avant de le sauvegarder
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Nous ajoutons une valeur par défaut pour active
+        user.setActive(true);
+        return userRepository.save(user);
+    }
+
+    @Override
+    // Méthode qui permet de charger un utilisateur par son nom d'utilisateur.
+    // Cette méthode est appelée par Spring Security lorsqu'un utilisateur tente de se connecter.
+    // Elle doit retourner un objet UserDetails qui contient les informations de l'utilisateur
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        // Nous récupérons l'utilisateur par son nom d'utilisateur
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Puis nous retournons un objet UserDetails qui contient les informations de l'utilisateur
+        // Nous utilisons la classe org.springframework.security.core.userdetails.User pour créer cet objet
+        // Cette classe est fournie par Spring Security et implémente l'interface UserDetails
+        // Elle contient les informations de l'utilisateur nécessaires à l'authentification
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole().getAuthority())
+                .build();
+    }
+}
+```
+
+----
+
+## Spring Security
+
+### `security.user.UserService`
+
+- `UserService` implémente `UserDetailsService`, qui est apporté par Spring Security
+
+- `UserDetailsService` est une interface qui permet de gérer les utilisateurs
+
+- Elle contient une méthode `loadUserByUsername` qui permet de charger un utilisateur par son nom d'utilisateur
+
+- Cette méthode est indispensable pour la connexion
+
+----
+
+## Spring Security
+
+### `security.user.UserController`
+
+```java
+@RestController
+@RequestMapping("users")
+public class UserController {
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping
+    public User save(@RequestBody User user) {
+        return userService.save(user);
+    }
+}
+```
+
+----
+
+## Spring Security
+
+### `security.user.UserController`
+
+- Rien de particulier ici, c'est un contrôleur classique
+
+- On a juste une méthode POST pour permettre la création. 
+
+----
+
+## Spring Security
+
+### `SecurityConfig`
+
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    // Création d'un bean pour la gestion des mots de passe
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authorizeRequests ->
+                        authorizeRequests
+                                .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/seances/{id}/reserver").hasRole("USER")
+                                .requestMatchers(HttpMethod.POST, "/**").hasRole("EMPLOYEE")
+                                .requestMatchers(HttpMethod.PUT, "/**").hasRole("EMPLOYEE")
+                                .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
+                )
+                .formLogin(withDefaults());
+
+        // Active l'autorisation HTTP Basic
+        http.httpBasic(Customizer.withDefaults());
+
+        // Désactive la protection CSRF
+        http.csrf(AbstractHttpConfigurer::disable);
+
+        return http.build();
+    }
+
+    @Bean
+    //  AuthenticationManager est une interface qui permet de gérer l'authentification des utilisateurs
+    public AuthenticationManager authenticationManager(
+            // Elle s'appuie sur une configuration d'authentification
+            // Ici, fournie par Spring Security
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
+        // Il est bien entendu possible de personnaliser cette configuration
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+}
+```
+
+----
+
+## Spring Security
+
+### `SecurityConfig`
+
+- Nous avons ajouté une règle pour permettre la création d'un utilisateur
+
+- Nous avons également ajouté un `AuthenticationManager`
+
+- C'est une interface qui permet de gérer l'authentification des utilisateurs
+
+- Elle s'appuie sur une configuration d'authentification, fournie par Spring Security
+
+----
+
+## Spring Security
+
+### Essai
+
+- Essayez de créer un utilisateur via Postman
+
+- Ensuite, essayez de vous connecter avec cet utilisateur
+
+- Vous devriez pouvoir vous connecter sans problème !
+
+----
+
+## Spring Security
+
+### A vous de jouer !
+
+Mettez en place l'authentification sur votre projet !
           </textarea>
         </section>
       </div>
